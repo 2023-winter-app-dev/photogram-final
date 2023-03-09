@@ -1,0 +1,137 @@
+<h1><%= @the_user.username %> </h1>
+<div>
+  <div>
+    <dl>
+      <dt>
+        Private
+      </dt>
+      <dd>
+        <%= @the_user.private %>
+      </dd>
+
+      <dt>
+        Followers
+      </dt>
+      <dd>
+        <%= @the_user.followers.count%>
+          <% if FollowRequest.where({:sender_id => session[:user_id]}).where({:recipient_id => @the_user.id})[0].present? %>
+            <% if FollowRequest.where({:sender_id => session[:user_id]}).where({:recipient_id => @the_user.id})[0].status == "accepted" %>
+              <a href ="/delete_follow_request/<%@the_user.id%>">
+                Unfollow
+              </a>
+            
+            <% elsif FollowRequest.where({:sender_id => session[:user_id]}).where({:recipient_id => @the_user.id})[0].status == "pending" %>
+              Request sent. <a href ="/delete_follow_request/<%@the_user.id%>"> Cancel </a>
+            <% elsif FollowRequest.where({:sender_id => session[:user_id]}).where({:recipient_id => @the_user.id})[0].status == "rejected" %>
+            <% end %>
+          <% else %>
+            <form action="/insert_follow_request" method="post">
+              <input type="hidden" name="query_sender_id" value="<%= session[:user_id] %>">
+              <input type="hidden" name="query_recipient_id" value="<%= @the_user.id %>">
+              <input type="hidden" name="query_status" value="<%= "pending" %>">
+              <button>Follow</button>
+            </form>
+          <% end %>
+      </dd>
+
+      <dt>
+        Following
+      </dt>
+      <dd>
+        <% if @the_user.sent_follow_requests_count.present?%>
+          <%= @the_user.sent_follow_requests_count %>
+        <% else %>
+          0
+        <% end %>
+      </dd>
+
+     <ul>
+        <li>
+          <a href="/users/<%= @the_user.username%>">
+            Profile
+          </a>
+        </li>
+        <li>
+          <a href="/users/<%= @the_user.username%>/liked_photos">
+            Liked photos
+          </a>
+        </li>
+        <li>
+          <a href="/users/<%= @the_user.username%>/feed">
+            Feed
+          </a>
+        </li>
+        <li>
+          <a href="/users/<%= @the_user.username%>/discover">
+            Discover
+          </a>
+        </li>
+    </ul>
+    </dl>
+  </div>
+</div>
+<h1>Own photos (<% if @the_user.own_photos.count.present? %><%= @the_user.own_photos.count%><% else %>0<% end %>)</h1>
+
+
+<div>
+  <div>
+    <table border="1">
+      <tr>
+        <th>
+          Image
+        </th>
+
+        <th>
+          Owner
+        </th>
+
+        <th>
+          Caption
+        </th>
+
+        <th>
+          Posted
+        </th>
+
+        <th>
+          Likes
+        </th>
+
+        <th>
+          
+        </th>
+
+      </tr>
+
+      <% @the_user.own_photos.each do |a_photo| %>
+      <tr>
+        <td>
+          <img src="<%= a_photo.image %>">
+        </td>
+
+        <td>
+          <%= a_photo.owner.username %>
+        </td>
+
+        <td>
+          <%= a_photo.caption %>
+        </td>
+
+        <td>
+          <%= time_ago_in_words(a_photo.created_at) %> ago
+        </td>
+
+        <td>
+          <%= a_photo.likes_count %>
+        </td>
+
+        <td>
+          <a href="/photos/<%= a_photo.id %>">
+            Show details
+          </a>
+        </td>
+      </tr>
+      <% end %>
+    </table>
+  </div>
+</div>
